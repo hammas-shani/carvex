@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-7 col-md-9">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <a href="{{ url_for('add_car') }}" class="back-link d-inline-flex align-items-center gap-2"
+         style="text-decoration:none"><!-- reuse styling --></a>
+    </div>
+
+    <div class="page-header mb-4">
+      <div class="page-icon">
+        <i class="bi bi-plus-circle-fill"></i>
+      </div>
+      <div>
+        <h1 class="page-title">List a Car</h1>
+        <p class="page-sub">Fill in the details to publish your listing</p>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <form method="POST" enctype="multipart/form-data" novalidate>
+
+        <!-- Model Name -->
+        <div class="mb-4">
+          <label class="field-label">
+            <i class="bi bi-car-front-fill me-2" style="color:var(--accent)"></i>Model Name
+          </label>
+          <input type="text" name="model_name" class="field-input"
+                 placeholder="e.g. Toyota Corolla 2022" required>
+        </div>
+
+        <!-- Price & Location -->
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6">
+            <label class="field-label">
+              <i class="bi bi-tag-fill me-2" style="color:var(--accent)"></i>Price (PKR)
+            </label>
+            <div class="input-addon-wrap">
+              <span class="input-addon">PKR</span>
+              <input type="number" name="price" class="field-input addon-right"
+                     placeholder="3,500,000" min="0" step="1000" required>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <label class="field-label">
+              <i class="bi bi-geo-alt-fill me-2" style="color:var(--danger)"></i>Location
+            </label>
+            <input type="text" name="location" class="field-input"
+                   placeholder="e.g. Lahore" required>
+          </div>
+        </div>
+
+        <!-- Driveable -->
+        <div class="mb-4">
+          <label class="field-label mb-2">
+            <i class="bi bi-speedometer2 me-2" style="color:var(--accent)"></i>Is the car driveable?
+          </label>
+          <div class="d-flex gap-3">
+            <label class="toggle-pill active-yes" id="lbl-yes">
+              <input type="radio" name="driveable" value="yes" checked hidden>
+              <i class="bi bi-check-circle-fill me-1" style="color:var(--success)"></i> Yes
+            </label>
+            <label class="toggle-pill" id="lbl-no">
+              <input type="radio" name="driveable" value="no" hidden>
+              <i class="bi bi-x-circle-fill me-1" style="color:var(--danger)"></i> Needs repair
+            </label>
+          </div>
+        </div>
+
+        <!-- Images -->
+        <div class="mb-4">
+          <label class="field-label mb-2">
+            <i class="bi bi-images me-2" style="color:var(--accent)"></i>Car Photos
+            <span style="font-size:.75rem;font-weight:400;color:var(--muted)">(up to 10 images)</span>
+          </label>
+          <div class="drop-zone" id="dropZone">
+            <i class="bi bi-cloud-arrow-up-fill drop-icon"></i>
+            <p class="drop-text">Drag &amp; drop photos here</p>
+            <p class="drop-hint">or click to browse your device</p>
+            <input type="file" name="images" id="imagesInput"
+                   accept="image/*" multiple class="drop-file-input">
+          </div>
+          <div id="previewGrid" class="preview-grid mt-3"></div>
+        </div>
+
+        <button type="submit" class="submit-btn w-100">
+          <i class="bi bi-upload me-2"></i>Publish Listing
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<style>
+  .page-header { display:flex;align-items:center;gap:1rem; }
+  .page-icon {
+    width:52px;height:52px;border-radius:14px;
+    background:var(--accent-light);border:1.5px solid var(--accent-mid);
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.4rem;color:var(--accent);flex-shrink:0;
+  }
+  .page-title { font-size:1.4rem;font-weight:800;color:var(--text);margin:0; }
+  .page-sub   { color:var(--muted);font-size:.84rem;margin:0; }
+
+  .form-card {
+    background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;
+    box-shadow:0 2px 16px rgba(0,0,0,.06);
+  }
+
+  .field-label { display:block;font-size:.83rem;font-weight:600;color:var(--text2);margin-bottom:.45rem; }
+  .field-input {
+    width:100%;background:var(--surface2);border:1.5px solid var(--border);
+    border-radius:10px;color:var(--text);padding:.65rem .9rem;font-size:.92rem;
+    outline:none;transition:border-color .2s,box-shadow .2s;
+  }
+  .field-input:focus { border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,166,35,.2);background:#fff; }
+  .field-input::placeholder { color:var(--muted); }
+
+  .input-addon-wrap { display:flex; }
+  .input-addon {
+    background:var(--surface2);border:1.5px solid var(--border);border-right:none;
+    border-radius:10px 0 0 10px;padding:.65rem .85rem;color:var(--muted);font-size:.88rem;
+    display:flex;align-items:center;white-space:nowrap;
+  }
+  .addon-right { border-radius:0 10px 10px 0 !important; }
+
+  /* Toggle pills */
+  .toggle-pill {
+    display:flex;align-items:center;gap:.4rem;
+    background:var(--surface2);border:1.5px solid var(--border);
+    border-radius:10px;padding:.55rem 1.1rem;cursor:pointer;
+    font-size:.88rem;color:var(--text2);transition:border-color .2s,background .2s;user-select:none;
+  }
+  .toggle-pill.active-yes {
+    background:var(--success-bg);border-color:var(--success-bdr);color:var(--success);
+  }
+  .toggle-pill.active-no {
+    background:var(--danger-bg);border-color:var(--danger-bdr);color:var(--danger);
+  }
+
+  /* Drop zone */
+  .drop-zone {
+    position:relative;border:2px dashed var(--border-dark);border-radius:14px;
+    padding:2.5rem 1rem;text-align:center;cursor:pointer;
+    background:var(--surface2);
+    transition:border-color .2s,background .2s;
+  }
+  .drop-zone:hover,.drop-zone.dragover {
+    border-color:var(--accent);background:var(--accent-light);
+  }
+  .drop-file-input { position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer; }
+  .drop-icon  { font-size:2.3rem;color:var(--accent);display:block;margin-bottom:.5rem; }
+  .drop-text  { color:var(--text2);font-weight:600;font-size:.92rem;margin:0; }
+  .drop-hint  { color:var(--muted);font-size:.8rem;margin:.2rem 0 0; }
+
+  /* Preview */
+  .preview-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.6rem; }
+  .preview-item { position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3; }
+  .preview-item img { width:100%;height:100%;object-fit:cover; }
+  .preview-remove {
+    position:absolute;top:4px;right:4px;
+    width:22px;height:22px;border-radius:50%;
+    background:rgba(255,255,255,.9);color:var(--danger);
+    border:none;cursor:pointer;font-size:.75rem;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 1px 4px rgba(0,0,0,.2);transition:background .2s;
+  }
+  .preview-remove:hover { background:#fff; }
+
+  .submit-btn {
+    background:var(--accent);color:#fff;font-weight:700;border:none;
+    border-radius:12px;padding:.8rem;font-size:1rem;cursor:pointer;
+    transition:background .2s,transform .15s,box-shadow .2s;
+  }
+  .submit-btn:hover { background:var(--accent-dark);transform:translateY(-2px);box-shadow:0 4px 14px rgba(245,166,35,.35); }
+</style>
+<script>
+  const dropZone    = document.getElementById('dropZone');
+  const fileInput   = document.getElementById('imagesInput');
+  const previewGrid = document.getElementById('previewGrid');
+  const lblYes = document.getElementById('lbl-yes');
+  const lblNo  = document.getElementById('lbl-no');
+  let selectedFiles = [];
+
+  document.querySelectorAll('input[name="driveable"]').forEach(r => {
+    r.addEventListener('change', () => {
+      lblYes.classList.toggle('active-yes', r.value === 'yes' && r.checked);
+      lblYes.classList.remove('active-no');
+      lblNo.classList.toggle('active-no', r.value === 'no' && r.checked);
+      lblNo.classList.remove('active-yes');
+    });
+  });
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('dragover');
+    addFiles(Array.from(e.dataTransfer.files));
+  });
+  fileInput.addEventListener('change', () => {
+    addFiles(Array.from(fileInput.files));
+    // NOTE: do NOT clear fileInput.value here — it breaks DataTransfer sync
+  });
+
+  function addFiles(files) {
+    files.filter(f => f.type.startsWith('image/')).slice(0, 10 - selectedFiles.length).forEach(f => selectedFiles.push(f));
+    renderPreviews(); syncInput();
+  }
+  function renderPreviews() {
+    previewGrid.innerHTML = '';
+    selectedFiles.forEach((f, i) => {
+      const url = URL.createObjectURL(f);
+      const item = document.createElement('div');
+      item.className = 'preview-item';
+      item.innerHTML = `<img src="${url}"><button type="button" class="preview-remove" data-idx="${i}"><i class="bi bi-x"></i></button>`;
+      previewGrid.appendChild(item);
+    });
+    previewGrid.querySelectorAll('.preview-remove').forEach(btn => {
+      btn.addEventListener('click', () => { selectedFiles.splice(+btn.dataset.idx, 1); renderPreviews(); syncInput(); });
+    });
+  }
+  function syncInput() {
+    const dt = new DataTransfer();
+    selectedFiles.forEach(f => dt.items.add(f));
+    fileInput.files = dt.files;
+  }
+</script>
+{% endblock %}

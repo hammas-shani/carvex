@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CarVex – Premium Car Marketplace</title>
+  <meta name="description" content="Browse and list cars on CarVex – Pakistan's premium car marketplace.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent:       #f5a623;
+      --accent-dark:  #e09516;
+      --accent-light: #fff8ee;
+      --accent-mid:   #fde8b8;
+      --bg:           #f1f5f9;
+      --surface:      #ffffff;
+      --surface2:     #f8fafc;
+      --border:       #e2e8f0;
+      --border-dark:  #cbd5e1;
+      --text:         #0f172a;
+      --text2:        #334155;
+      --muted:        #64748b;
+      --success:      #16a34a;
+      --success-bg:   #f0fdf4;
+      --success-bdr:  #bbf7d0;
+      --danger:       #dc2626;
+      --danger-bg:    #fef2f2;
+      --danger-bdr:   #fecaca;
+      --gold:         #f5a623;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: rgba(255,255,255,0.92) !important;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.7rem 0;
+      box-shadow: 0 1px 12px rgba(0,0,0,.06);
+    }
+    .navbar-brand {
+      font-weight: 900;
+      font-size: 1.45rem;
+      letter-spacing: -0.6px;
+      color: var(--accent) !important;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      text-decoration: none;
+    }
+    .brand-dot {
+      width: 8px; height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { transform: scale(1); opacity:1; }
+      50%      { transform: scale(1.7); opacity:.5; }
+    }
+    .nav-link {
+      color: var(--text2) !important;
+      font-size: .88rem;
+      font-weight: 500;
+      transition: color .2s;
+      padding: .4rem .7rem !important;
+      border-radius: 8px;
+    }
+    .nav-link:hover { color: var(--accent) !important; background: var(--accent-light); }
+
+    .btn-nav-accent {
+      background: var(--accent);
+      color: #000 !important;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: .85rem;
+      padding: .45rem 1.15rem;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .btn-nav-accent:hover {
+      background: var(--accent-dark);
+      color: #000 !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(245,166,35,.35);
+    }
+    .btn-nav-outline {
+      color: var(--text2) !important;
+      border: 1.5px solid var(--border-dark);
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: .85rem;
+      padding: .43rem 1.1rem;
+      transition: border-color .2s, color .2s, background .2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .btn-nav-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent) !important;
+      background: var(--accent-light);
+    }
+
+    /* ── Car Cards ── */
+    .car-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .car-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 48px rgba(245,166,35,.18);
+      border-color: rgba(245,166,35,.4);
+    }
+    .car-card .card-img-top { height: 200px; object-fit: cover; }
+    .car-placeholder {
+      height: 200px;
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Search wrapper ── */
+    .search-wrapper {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+    .search-wrapper:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(245,166,35,.18);
+    }
+    .search-wrapper input {
+      background: transparent !important;
+      border: none !important;
+      color: var(--text) !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    .search-wrapper input::placeholder { color: var(--muted); }
+    .search-wrapper .input-group-text { background: transparent; border: none; }
+
+    /* ── Status Badges ── */
+    .badge-drv {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success-bdr);
+      border-radius: 50px;
+      padding: .28rem .75rem;
+      font-weight: 600;
+      font-size: .76rem;
+      white-space: nowrap;
+    }
+    .badge-nodrv {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid var(--danger-bdr);
+      border-radius: 50px;
+      padding: .28rem .75rem;
+      font-weight: 600;
+      font-size: .76rem;
+      white-space: nowrap;
+    }
+
+    /* ── Alerts ── */
+    .alert { border-radius: 12px; font-size: .9rem; font-weight: 500; }
+    .alert-success {
+      background: var(--success-bg); border-color: var(--success-bdr);
+      color: #15803d;
+    }
+    .alert-danger {
+      background: var(--danger-bg); border-color: var(--danger-bdr);
+      color: #b91c1c;
+    }
+    .alert-warning {
+      background: #fffbeb; border-color: #fde68a;
+      color: #92400e;
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .82rem;
+      padding: 2rem 0;
+      margin-top: 5rem;
+    }
+    footer .footer-brand { color: var(--accent); font-weight: 800; font-size: 1.05rem; }
+    footer .footer-links a { color: var(--muted); text-decoration: none; transition: color .2s; margin: 0 .6rem; }
+    footer .footer-links a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('index') }}">
+      <i class="bi bi-car-front-fill" style="color:#0a0a0a; filter: drop-shadow(0 1px 2px rgba(0,0,0,.18));"></i>CarVex<span class="brand-dot ms-1"></span>
+    </a>
+    <button class="navbar-toggler border-0" type="button"
+            data-bs-toggle="collapse" data-bs-target="#navMenu"
+            style="color:var(--text2)">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('index') }}">
+            <i class="bi bi-house-door me-1"></i>Home
+          </a>
+        </li>
+        {% if current_user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('my_listings') }}">
+            <i class="bi bi-grid-1x2 me-1"></i>My Listings
+          </a>
+        </li>
+        <li class="nav-item ms-lg-2">
+          <a class="btn btn-nav-accent" href="{{ url_for('add_car') }}">
+            <i class="bi bi-plus-circle-fill me-1"></i>Add Car
+          </a>
+        </li>
+        <li class="nav-item ms-1">
+          <a class="btn btn-nav-outline ms-lg-1" href="{{ url_for('logout') }}">
+            <i class="bi bi-box-arrow-right me-1"></i>Logout
+          </a>
+        </li>
+        {% else %}
+        <li class="nav-item ms-lg-2">
+          <a class="btn btn-nav-accent" href="{{ url_for('login') }}">
+            <i class="bi bi-person-circle me-1"></i>Login / Sign Up
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container my-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        <i class="bi bi-{{ 'check-circle-fill' if category == 'success' else 'exclamation-circle-fill' if category == 'danger' else 'info-circle-fill' }} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</div>
+
+<footer>
+  <div class="container text-center">
+    <div class="footer-brand mb-2">
+      <i class="bi bi-car-front-fill me-1"></i>CarVex
+    </div>
+    <div class="footer-links mb-2">
+      <a href="{{ url_for('index') }}">Browse Cars</a>
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('add_car') }}">Sell Your Car</a>
+      <a href="{{ url_for('my_listings') }}">My Listings</a>
+      {% else %}
+      <a href="{{ url_for('login') }}">Login</a>
+      {% endif %}
+    </div>
+    <div style="font-size:.78rem;">&copy; 2024 CarVex &mdash; All rights reserved.</div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

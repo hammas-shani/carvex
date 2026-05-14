@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
+  <div>
+    <h1 class="page-title">My <span style="color:var(--accent)">Listings</span></h1>
+    <p class="page-sub">{{ cars|length }} listing{{ 's' if cars|length != 1 else '' }} published by you</p>
+  </div>
+  <a href="{{ url_for('add_car') }}" class="btn-add-new">
+    <i class="bi bi-plus-circle-fill me-2"></i>Add New Car
+  </a>
+</div>
+
+{% if cars %}
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4 pb-3">
+  {% for car in cars %}
+  <div class="col">
+    <div class="card car-card h-100">
+
+      <a href="{{ url_for('car_details', car_id=car.id) }}" class="text-decoration-none">
+        {% if car.cover_image %}
+        <img src="{{ url_for('static', filename='uploads/' + car.cover_image) }}"
+             class="card-img-top" alt="{{ car.model_name }}" loading="lazy">
+        {% else %}
+        <div class="car-placeholder">
+          <i class="bi bi-car-front" style="font-size:3rem;color:#94a3b8"></i>
+        </div>
+        {% endif %}
+
+        {% if car.images|length > 1 %}
+        <div class="img-count-badge"><i class="bi bi-images me-1"></i>{{ car.images|length }}</div>
+        {% endif %}
+
+        <div class="card-badge">
+          {% if car.driveable %}
+          <span class="badge-drv"><i class="bi bi-check-circle me-1"></i>Driveable</span>
+          {% else %}
+          <span class="badge-nodrv"><i class="bi bi-x-circle me-1"></i>Not Driveable</span>
+          {% endif %}
+        </div>
+      </a>
+
+      <div class="card-body pb-2 pt-3">
+        <h6 class="car-name mb-1">{{ car.model_name }}</h6>
+        <div class="car-price">PKR {{ "{:,.0f}".format(car.price) }}</div>
+        <div class="car-loc mt-1">
+          <i class="bi bi-geo-alt-fill" style="color:var(--danger)"></i> {{ car.location }}
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="my-card-actions">
+        <a href="{{ url_for('car_details', car_id=car.id) }}" class="my-act-view">
+          <i class="bi bi-eye me-1"></i>View
+        </a>
+        <a href="{{ url_for('edit_car', car_id=car.id) }}" class="my-act-edit">
+          <i class="bi bi-pencil-fill me-1"></i>Edit
+        </a>
+        <button class="my-act-delete"
+                data-bs-toggle="modal" data-bs-target="#del{{ car.id }}">
+          <i class="bi bi-trash3-fill"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Delete modal -->
+    <div class="modal fade" id="del{{ car.id }}" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content del-modal">
+          <div class="modal-body text-center p-4">
+            <div class="del-icon-wrap">
+              <i class="bi bi-trash3-fill" style="color:var(--danger);font-size:1.4rem"></i>
+            </div>
+            <h5 class="del-title">Delete Listing?</h5>
+            <p class="del-sub">"<strong>{{ car.model_name }}</strong>" will be permanently removed.</p>
+            <div class="d-flex gap-3 justify-content-center">
+              <button class="btn-del-cancel" data-bs-dismiss="modal">Cancel</button>
+              <form method="POST" action="{{ url_for('delete_car', car_id=car.id) }}" style="margin:0">
+                <button type="submit" class="btn-del-confirm">Yes, Delete</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon"><i class="bi bi-car-front"></i></div>
+  <h4>No listings yet</h4>
+  <p>You haven't posted any cars. Start by adding your first listing!</p>
+  <a href="{{ url_for('add_car') }}" class="btn-cta mt-2">
+    <i class="bi bi-plus-circle-fill me-1"></i>Add Your First Car
+  </a>
+</div>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<style>
+  .page-title { font-size:1.7rem;font-weight:900;color:var(--text);margin:0; }
+  .page-sub   { color:var(--muted);font-size:.85rem;margin:0; }
+  .btn-add-new {
+    display:inline-flex;align-items:center;
+    background:var(--accent);color:#fff;font-weight:700;
+    border:none;border-radius:12px;padding:.6rem 1.3rem;font-size:.9rem;
+    text-decoration:none;transition:background .2s,transform .15s,box-shadow .2s;
+  }
+  .btn-add-new:hover { background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(245,166,35,.35);color:#000; }
+
+  .car-card { position:relative; }
+  .card-badge { position:absolute;top:10px;left:10px; }
+  .img-count-badge {
+    position:absolute;top:10px;right:10px;
+    background:rgba(0,0,0,.5);color:#fff;border-radius:50px;
+    padding:.18rem .6rem;font-size:.72rem;font-weight:600;backdrop-filter:blur(4px);
+  }
+  .car-name  { font-size:.94rem;font-weight:700;color:var(--text); }
+  .car-price { font-size:1rem;font-weight:800;color:var(--accent); }
+  .car-loc   { font-size:.8rem;color:var(--muted); }
+
+  .my-card-actions {
+    display:flex;gap:.5rem;align-items:center;
+    padding:.6rem .9rem .85rem;border-top:1px solid var(--border);
+    background:var(--surface2);
+  }
+  .my-act-view {
+    flex:1;text-align:center;padding:.4rem;border-radius:8px;font-size:.8rem;font-weight:600;
+    background:var(--surface);color:var(--text2);text-decoration:none;border:1px solid var(--border);
+    transition:background .2s,border-color .2s,color .2s;
+  }
+  .my-act-view:hover { background:var(--border);color:var(--text); }
+  .my-act-edit {
+    flex:1;text-align:center;padding:.4rem;border-radius:8px;font-size:.8rem;font-weight:600;
+    background:var(--accent-light);color:var(--accent);text-decoration:none;border:1px solid var(--accent-mid);
+    transition:background .2s;
+  }
+  .my-act-edit:hover { background:var(--accent-mid); }
+  .my-act-delete {
+    width:34px;height:34px;border-radius:8px;flex-shrink:0;
+    background:var(--danger-bg);color:var(--danger);
+    border:1px solid var(--danger-bdr);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-size:.85rem;
+    transition:background .2s;
+  }
+  .my-act-delete:hover { background:var(--danger-bdr); }
+
+  /* Modal */
+  .del-modal { background:var(--surface);border:1px solid var(--border);border-radius:16px; }
+  .del-icon-wrap {
+    width:52px;height:52px;background:var(--danger-bg);border:1px solid var(--danger-bdr);
+    border-radius:14px;display:flex;align-items:center;justify-content:center;
+    margin:0 auto .9rem;
+  }
+  .del-title { color:var(--text);font-weight:700;font-size:1.05rem;margin-bottom:.3rem; }
+  .del-sub   { color:var(--muted);font-size:.85rem;margin-bottom:1.3rem; }
+  .btn-del-cancel {
+    background:var(--surface2);color:var(--text2);border:1.5px solid var(--border);
+    border-radius:10px;padding:.5rem 1.4rem;font-weight:600;cursor:pointer;transition:background .2s;
+  }
+  .btn-del-cancel:hover { background:var(--border); }
+  .btn-del-confirm {
+    background:var(--danger);color:#fff;border:none;
+    border-radius:10px;padding:.5rem 1.4rem;font-weight:700;cursor:pointer;transition:background .2s;
+  }
+  .btn-del-confirm:hover { background:#b91c1c; }
+
+  /* Empty */
+  .empty-state { text-align:center;padding:5rem 1rem; }
+  .empty-icon {
+    width:88px;height:88px;background:var(--accent-light);border:1.5px solid var(--accent-mid);
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    margin:0 auto 1.5rem;font-size:2.8rem;color:var(--accent);
+  }
+  .empty-state h4 { color:var(--text);font-weight:700;font-size:1.25rem; }
+  .empty-state p  { color:var(--muted);font-size:.9rem; }
+  .btn-cta {
+    display:inline-flex;align-items:center;
+    background:var(--accent);color:#fff;font-weight:700;border-radius:50px;
+    padding:.6rem 1.6rem;border:none;text-decoration:none;
+    transition:background .2s,transform .15s;
+  }
+  .btn-cta:hover { background:var(--accent-dark);transform:translateY(-2px);color:#000; }
+</style>
+{% endblock %}

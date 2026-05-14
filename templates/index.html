@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- ══ Hero ══ -->
+<div class="hero-section">
+  <div class="hero-inner text-center">
+    <span class="hero-tag">🚗 Pakistan's #1 Car Marketplace</span>
+    <h1 class="hero-title">Find Your <span class="hero-accent">Perfect</span> Car</h1>
+    <p class="hero-sub">Browse thousands of verified listings across Pakistan</p>
+
+    <!-- Search -->
+    <div class="row justify-content-center mt-4">
+      <div class="col-lg-6 col-md-9">
+        <form method="GET" action="{{ url_for('index') }}">
+          <div class="input-group search-wrapper px-2 py-1">
+            <span class="input-group-text ps-2">
+              <i class="bi bi-search" style="color:var(--accent)"></i>
+            </span>
+            <input type="text" name="q" class="form-control py-2"
+                   placeholder="Search by model or city…"
+                   value="{{ q }}" autocomplete="off">
+            <button class="btn btn-search" type="submit">Search</button>
+            {% if q %}
+            <a href="{{ url_for('index') }}" class="btn btn-clear" title="Clear">
+              <i class="bi bi-x-lg"></i>
+            </a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Stats pills -->
+    <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
+      <div class="stat-pill"><i class="bi bi-check-circle-fill" style="color:var(--success)"></i> Verified Listings</div>
+      <div class="stat-pill"><i class="bi bi-shield-fill-check" style="color:var(--accent)"></i> Secure Platform</div>
+      <div class="stat-pill"><i class="bi bi-geo-alt-fill" style="color:var(--danger)"></i> All Over Pakistan</div>
+    </div>
+  </div>
+</div>
+
+<!-- Results label -->
+{% if q %}
+<p class="results-label">
+  <i class="bi bi-funnel me-1" style="color:var(--accent)"></i>
+  <strong>{{ cars|length }}</strong> result{{ 's' if cars|length != 1 else '' }} for
+  "<strong>{{ q }}</strong>"
+</p>
+{% endif %}
+
+<!-- Section heading -->
+{% if not q %}
+<div class="section-heading mb-4">
+  <h2>Latest <span style="color:var(--accent)">Listings</span></h2>
+  <p>Fresh cars added by our community</p>
+</div>
+{% endif %}
+
+<!-- ══ Car Grid ══ -->
+{% if cars %}
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4 pb-3">
+  {% for car in cars %}
+  <div class="col">
+    <a href="{{ url_for('car_details', car_id=car.id) }}" class="text-decoration-none">
+      <div class="card car-card h-100">
+
+        {% if car.cover_image %}
+        <img src="{{ url_for('static', filename='uploads/' + car.cover_image) }}"
+             class="card-img-top" alt="{{ car.model_name }}" loading="lazy">
+        {% else %}
+        <div class="car-placeholder">
+          <i class="bi bi-car-front" style="font-size:3rem;color:#94a3b8"></i>
+        </div>
+        {% endif %}
+
+        {% if car.images|length > 1 %}
+        <div class="img-count-badge">
+          <i class="bi bi-images me-1"></i>{{ car.images|length }}
+        </div>
+        {% endif %}
+
+        <div class="card-badge">
+          {% if car.driveable %}
+          <span class="badge-drv"><i class="bi bi-check-circle me-1"></i>Driveable</span>
+          {% else %}
+          <span class="badge-nodrv"><i class="bi bi-x-circle me-1"></i>Not Driveable</span>
+          {% endif %}
+        </div>
+
+        <div class="card-body pb-2 pt-3">
+          <h6 class="car-name mb-1">{{ car.model_name }}</h6>
+          <div class="car-price">PKR {{ "{:,.0f}".format(car.price) }}</div>
+        </div>
+
+        <div class="card-footer-custom">
+          <span><i class="bi bi-geo-alt-fill" style="color:var(--danger)"></i> {{ car.location }}</span>
+          <span class="view-link">View <i class="bi bi-arrow-right-short"></i></span>
+        </div>
+
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon"><i class="bi bi-car-front"></i></div>
+  <h4>{% if q %}No cars found for "{{ q }}"{% else %}No listings yet{% endif %}</h4>
+  <p>{% if q %}Try a different search term.{% else %}Be the first to list a car!{% endif %}</p>
+  {% if current_user.is_authenticated %}
+  <a href="{{ url_for('add_car') }}" class="btn-cta mt-2">
+    <i class="bi bi-plus-circle-fill me-1"></i>List Your Car
+  </a>
+  {% else %}
+  <a href="{{ url_for('login') }}" class="btn-cta mt-2">
+    <i class="bi bi-person-circle me-1"></i>Login to Post
+  </a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<style>
+  /* Hero */
+  .hero-section {
+    background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 60%, #f0fdf4 100%);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 4rem 1.5rem 3.5rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(245,166,35,.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: var(--accent-light);
+    border: 1px solid var(--accent-mid);
+    color: var(--accent);
+    border-radius: 50px;
+    padding: .3rem .9rem;
+    font-size: .8rem;
+    font-weight: 600;
+    margin-bottom: 1.1rem;
+  }
+  .hero-title {
+    font-size: clamp(1.8rem, 5vw, 3.2rem);
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: .6rem;
+  }
+  .hero-accent {
+    background: linear-gradient(135deg, #f5a623, #e05a1a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub { color: var(--muted); font-size: 1rem; margin: 0; }
+
+  /* Search */
+  .btn-search {
+    background: var(--accent); color: #fff; font-weight: 700;
+    border-radius: 50px !important; padding: .45rem 1.3rem; border: none;
+    transition: background .2s, transform .15s;
+  }
+  .btn-search:hover { background: var(--accent-dark); color:#000; transform: translateY(-1px); }
+  .btn-clear {
+    background: var(--surface2); color: var(--muted); border: none;
+    border-radius: 50px !important; transition: background .2s;
+  }
+  .btn-clear:hover { background: var(--border); }
+
+  /* Stat pills */
+  .stat-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: .35rem 1rem;
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  }
+
+  /* Section heading */
+  .section-heading h2 { font-size: 1.5rem; font-weight: 800; color: var(--text); margin: 0; }
+  .section-heading p  { color: var(--muted); font-size: .85rem; margin: .15rem 0 0; }
+  .results-label { color: var(--muted); font-size: .9rem; margin-bottom: 1.2rem; }
+
+  /* Card overlays */
+  .car-card { position: relative; }
+  .card-badge { position: absolute; top: 10px; left: 10px; }
+  .img-count-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,.5); color: #fff;
+    border-radius: 50px; padding: .18rem .6rem;
+    font-size: .72rem; font-weight: 600;
+    backdrop-filter: blur(4px);
+  }
+  .car-name  { font-size: .95rem; font-weight: 700; color: var(--text); }
+  .car-price { font-size: 1.05rem; font-weight: 800; color: var(--accent); }
+  .card-footer-custom {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .55rem 1rem .85rem;
+    font-size: .8rem; color: var(--muted);
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .view-link { color: var(--accent); font-weight: 600; font-size: .8rem; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 5rem 1rem; }
+  .empty-icon {
+    width: 90px; height: 90px;
+    background: var(--accent-light);
+    border: 1px solid var(--accent-mid);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2.8rem; color: var(--accent);
+  }
+  .empty-state h4 { color: var(--text); font-weight: 700; font-size: 1.25rem; }
+  .empty-state p  { color: var(--muted); font-size: .9rem; }
+  .btn-cta {
+    display: inline-flex; align-items: center;
+    background: var(--accent); color: #fff; font-weight: 700;
+    border-radius: 50px; padding: .6rem 1.6rem; border: none;
+    text-decoration: none; transition: background .2s, transform .15s;
+  }
+  .btn-cta:hover { background: var(--accent-dark); transform: translateY(-2px); color:#000; }
+</style>
+{% endblock %}

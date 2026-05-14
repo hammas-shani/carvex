@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-9 col-xl-8">
+
+    <!-- Top bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <a href="{{ url_for('index') }}" class="back-link d-inline-flex align-items-center gap-2">
+        <i class="bi bi-arrow-left"></i> Back to Listings
+      </a>
+      {% if current_user.is_authenticated and car.user_id == current_user.id %}
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('edit_car', car_id=car.id) }}" class="btn-action-edit">
+          <i class="bi bi-pencil-fill me-1"></i>Edit
+        </a>
+        <button type="button" class="btn-action-delete"
+                data-bs-toggle="modal" data-bs-target="#deleteModal">
+          <i class="bi bi-trash3-fill me-1"></i>Delete
+        </button>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Delete modal -->
+    {% if current_user.is_authenticated and car.user_id == current_user.id %}
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content del-modal">
+          <div class="modal-body text-center p-4">
+            <div class="del-icon-wrap">
+              <i class="bi bi-trash3-fill" style="color:var(--danger);font-size:1.5rem"></i>
+            </div>
+            <h5 class="del-title">Delete Listing?</h5>
+            <p class="del-sub">"<strong>{{ car.model_name }}</strong>" will be permanently removed.</p>
+            <div class="d-flex gap-3 justify-content-center">
+              <button class="btn-del-cancel" data-bs-dismiss="modal">Cancel</button>
+              <form method="POST" action="{{ url_for('delete_car', car_id=car.id) }}" style="margin:0">
+                <button type="submit" class="btn-del-confirm">Yes, Delete</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Gallery -->
+    {% if car.images %}
+      {% if car.images|length > 1 %}
+      <div id="carGallery" class="carousel slide rounded-3 overflow-hidden mb-2 shadow-sm"
+           data-bs-ride="false">
+        <div class="carousel-inner">
+          {% for img in car.images %}
+          <div class="carousel-item {{ 'active' if loop.first }}">
+            <img src="{{ url_for('static', filename='uploads/' + img.filename) }}"
+                 class="d-block w-100 gallery-img" alt="{{ car.model_name }} – {{ loop.index }}">
+          </div>
+          {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button"
+                data-bs-target="#carGallery" data-bs-slide="prev">
+          <span class="carousel-btn"><i class="bi bi-chevron-left"></i></span>
+        </button>
+        <button class="carousel-control-next" type="button"
+                data-bs-target="#carGallery" data-bs-slide="next">
+          <span class="carousel-btn"><i class="bi bi-chevron-right"></i></span>
+        </button>
+        <div class="carousel-counter">
+          <i class="bi bi-images me-1"></i>
+          <span id="slideNum">1</span> / {{ car.images|length }}
+        </div>
+      </div>
+      <div class="thumb-strip mb-4">
+        {% for img in car.images %}
+        <img src="{{ url_for('static', filename='uploads/' + img.filename) }}"
+             class="thumb {{ 'active' if loop.first }}"
+             data-bs-target="#carGallery"
+             data-bs-slide-to="{{ loop.index0 }}" alt="thumb">
+        {% endfor %}
+      </div>
+      {% else %}
+      <img src="{{ url_for('static', filename='uploads/' + car.images[0].filename) }}"
+           class="w-100 rounded-3 gallery-img mb-4 shadow-sm" alt="{{ car.model_name }}">
+      {% endif %}
+    {% else %}
+    <div class="no-img-box rounded-3 mb-4">
+      <i class="bi bi-car-front"></i>
+      <span>No photos uploaded</span>
+    </div>
+    {% endif %}
+
+    <!-- Info card -->
+    <div class="detail-card">
+
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+        <div>
+          <h1 class="detail-title">{{ car.model_name }}</h1>
+          <div class="detail-price">PKR {{ "{:,.0f}".format(car.price) }}</div>
+        </div>
+        {% if car.driveable %}
+        <span class="badge-drv fs-sm">
+          <i class="bi bi-check-circle-fill me-1"></i>Driveable
+        </span>
+        {% else %}
+        <span class="badge-nodrv fs-sm">
+          <i class="bi bi-x-circle-fill me-1"></i>Not Driveable
+        </span>
+        {% endif %}
+      </div>
+
+      <hr class="detail-hr">
+
+      <!-- Specs -->
+      <p class="sec-label">Specifications</p>
+      <div class="specs-grid mb-4">
+        <div class="spec-box">
+          <div class="spec-icon" style="background:#fef2f2">
+            <i class="bi bi-geo-alt-fill" style="color:var(--danger)"></i>
+          </div>
+          <div><small>Location</small><strong>{{ car.location }}</strong></div>
+        </div>
+        <div class="spec-box">
+          <div class="spec-icon" style="background:#f0fdf4">
+            <i class="bi {{ 'bi-tools' if car.driveable else 'bi-wrench-adjustable' }}"
+               style="color:{{ 'var(--success)' if car.driveable else 'var(--danger)' }}"></i>
+          </div>
+          <div><small>Condition</small>
+            <strong>{{ 'Ready to Drive' if car.driveable else 'Needs Repair' }}</strong>
+          </div>
+        </div>
+        <div class="spec-box">
+          <div class="spec-icon" style="background:var(--accent-light)">
+            <i class="bi bi-tag-fill" style="color:var(--accent)"></i>
+          </div>
+          <div><small>Asking Price</small>
+            <strong style="color:var(--accent)">PKR {{ "{:,.0f}".format(car.price) }}</strong>
+          </div>
+        </div>
+        <div class="spec-box">
+          <div class="spec-icon" style="background:#faf5ff">
+            <i class="bi bi-hash" style="color:#7c3aed"></i>
+          </div>
+          <div><small>Listing ID</small>
+            <strong style="color:var(--muted)">#{{ car.id }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <hr class="detail-hr">
+
+      <!-- Seller -->
+      <p class="sec-label">Seller Contact</p>
+      <div class="d-flex flex-column gap-3">
+        <a href="mailto:{{ car.owner.email }}" class="contact-box">
+          <div class="contact-icon" style="background:var(--accent-light)">
+            <i class="bi bi-envelope-fill" style="color:var(--accent)"></i>
+          </div>
+          <div>
+            <small>Email</small>
+            <strong>{{ car.owner.email }}</strong>
+          </div>
+          <i class="bi bi-arrow-up-right ms-auto" style="color:var(--muted)"></i>
+        </a>
+        <a href="tel:{{ car.owner.phone }}" class="contact-box">
+          <div class="contact-icon" style="background:#f0fdf4">
+            <i class="bi bi-telephone-fill" style="color:var(--success)"></i>
+          </div>
+          <div>
+            <small>Phone</small>
+            <strong>{{ car.owner.phone }}</strong>
+          </div>
+          <i class="bi bi-arrow-up-right ms-auto" style="color:var(--muted)"></i>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<style>
+  .back-link { color:var(--muted);font-size:.86rem;font-weight:600;text-decoration:none;transition:color .2s; }
+  .back-link:hover { color:var(--accent); }
+
+  .btn-action-edit {
+    display:inline-flex;align-items:center;
+    background:var(--accent-light);color:var(--accent);
+    border:1.5px solid var(--accent-mid);border-radius:10px;
+    padding:.42rem 1rem;font-size:.84rem;font-weight:600;
+    text-decoration:none;transition:background .2s,border-color .2s;
+  }
+  .btn-action-edit:hover { background:var(--accent-mid);border-color:var(--accent);color:var(--accent); }
+  .btn-action-delete {
+    display:inline-flex;align-items:center;
+    background:var(--danger-bg);color:var(--danger);
+    border:1.5px solid var(--danger-bdr);border-radius:10px;
+    padding:.42rem 1rem;font-size:.84rem;font-weight:600;cursor:pointer;
+    transition:background .2s;
+  }
+  .btn-action-delete:hover { background:#fecaca; }
+
+  /* Delete modal */
+  .del-modal { background:var(--surface);border:1px solid var(--border);border-radius:16px; }
+  .del-icon-wrap {
+    width:54px;height:54px;background:var(--danger-bg);border:1px solid var(--danger-bdr);
+    border-radius:14px;display:flex;align-items:center;justify-content:center;
+    margin:0 auto .9rem;
+  }
+  .del-title { color:var(--text);font-weight:700;font-size:1.1rem;margin-bottom:.3rem; }
+  .del-sub   { color:var(--muted);font-size:.86rem;margin-bottom:1.4rem; }
+  .btn-del-cancel {
+    background:var(--surface2);color:var(--text2);border:1.5px solid var(--border);
+    border-radius:10px;padding:.5rem 1.4rem;font-weight:600;cursor:pointer;transition:background .2s;
+  }
+  .btn-del-cancel:hover { background:var(--border); }
+  .btn-del-confirm {
+    background:var(--danger);color:#fff;border:none;
+    border-radius:10px;padding:.5rem 1.4rem;font-weight:700;cursor:pointer;transition:background .2s;
+  }
+  .btn-del-confirm:hover { background:#b91c1c; }
+
+  /* Gallery */
+  .gallery-img { max-height:480px;object-fit:cover; }
+  .carousel-btn {
+    width:38px;height:38px;border-radius:50%;
+    background:rgba(255,255,255,.85);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text);font-size:.95rem;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+  .carousel-control-prev,.carousel-control-next{width:auto;padding:0 12px;}
+  .carousel-counter {
+    position:absolute;bottom:12px;right:14px;
+    background:rgba(255,255,255,.85);color:var(--text);
+    border-radius:50px;padding:.2rem .7rem;
+    font-size:.78rem;font-weight:600;
+    backdrop-filter:blur(4px);
+    box-shadow:0 1px 4px rgba(0,0,0,.1);
+  }
+  .thumb-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;}
+  .thumb-strip::-webkit-scrollbar{height:4px;}
+  .thumb-strip::-webkit-scrollbar-thumb{background:var(--border-dark);border-radius:2px;}
+  .thumb{
+    width:70px;height:50px;object-fit:cover;border-radius:8px;cursor:pointer;
+    opacity:.55;border:2px solid transparent;transition:opacity .2s,border-color .2s;flex-shrink:0;
+  }
+  .thumb.active,.thumb:hover{opacity:1;border-color:var(--accent);}
+
+  .no-img-box{
+    height:240px;background:var(--surface2);border:2px dashed var(--border);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:.7rem;color:var(--muted);
+  }
+  .no-img-box i{font-size:3rem;opacity:.35;}
+
+  /* Info card */
+  .detail-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:20px;padding:2rem;
+    box-shadow:0 1px 16px rgba(0,0,0,.05);
+  }
+  .detail-title{font-size:1.7rem;font-weight:800;color:var(--text);margin:0;}
+  .detail-price{font-size:1.35rem;font-weight:800;color:var(--accent);margin-top:.2rem;}
+  .fs-sm{font-size:.88rem!important;padding:.4rem 1rem;}
+  .detail-hr{border-color:var(--border);margin:1.4rem 0;}
+
+  .sec-label{font-size:.7rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem;}
+  .specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;}
+  @media(max-width:480px){.specs-grid{grid-template-columns:1fr;}}
+  .spec-box{
+    display:flex;align-items:center;gap:.85rem;
+    background:var(--surface2);border:1px solid var(--border);
+    border-radius:12px;padding:.9rem 1rem;
+  }
+  .spec-icon{width:40px;height:40px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+  .spec-box small{display:block;color:var(--muted);font-size:.7rem;margin-bottom:.1rem;}
+  .spec-box strong{display:block;color:var(--text);font-size:.9rem;font-weight:600;}
+
+  .contact-box{
+    display:flex;align-items:center;gap:.85rem;
+    background:var(--surface2);border:1px solid var(--border);
+    border-radius:14px;padding:1rem 1.1rem;text-decoration:none;
+    transition:border-color .2s,background .2s,box-shadow .2s;
+  }
+  .contact-box:hover{border-color:var(--accent);background:var(--accent-light);box-shadow:0 2px 12px rgba(245,166,35,.2);}
+  .contact-icon{width:44px;height:44px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.15rem;}
+  .contact-box small{display:block;color:var(--muted);font-size:.7rem;}
+  .contact-box strong{display:block;color:var(--text);font-size:.9rem;}
+</style>
+<script>
+  const gallery = document.getElementById('carGallery');
+  if (gallery) {
+    const thumbs = document.querySelectorAll('.thumb');
+    const numEl  = document.getElementById('slideNum');
+    gallery.addEventListener('slid.bs.carousel', e => {
+      thumbs.forEach((t, i) => t.classList.toggle('active', i === e.to));
+      if (numEl) numEl.textContent = e.to + 1;
+    });
+  }
+</script>
+{% endblock %}
